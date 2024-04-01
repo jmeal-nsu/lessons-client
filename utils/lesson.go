@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"errors"
 	//"fmt"
 	"fmt"
+	"strconv"
 )
 
 type Lesson struct {
@@ -32,11 +34,27 @@ func (t *TimeTable) AddLesson(name string, weekDay int,
 			teacher, classroom})
 }
 
-func (l Lesson) PrintLesson(i int) {
-	fmt.Println(fmt.Sprintf("  %d. %s", i, l.Name))
-	fmt.Println("    ", fmt.Sprintf("%s-%s", l.StartTime, l.EndTime))
-	fmt.Println("    ", l.Classroom)
-	fmt.Println("    ", l.Teacher)
+func (t *TimeTable) PrintLesson(weekDayS string, time string) {
+
+	weekDay, err := parseDay(weekDayS)
+	if err != nil {
+		return
+	}
+
+	lessons := (*t)[weekDay]
+
+	for _, les := range lessons {
+		if les.StartTime == time {
+			fmt.Println(les)
+		}
+	}
+}
+
+func (t *TimeTable) PrintDay(weekDayS string) {
+
+	for _, time := range times {
+		t.PrintLesson(weekDayS, time)
+	}
 }
 
 func (t *TimeTable) Print() {
@@ -62,4 +80,12 @@ func (t *TimeTable) Print() {
 			lessons[0], lessons[1], lessons[2], lessons[3], lessons[4], lessons[5], lessons[6]))
 		fmt.Println(horizSeparator)
 	}
+}
+
+func parseDay(day string) (int, error) {
+	weekDay, err := strconv.Atoi(day)
+	if weekDay <= 0 || weekDay > 7 || err != nil {
+		return -1, errors.New("")
+	}
+	return weekDay - 1, nil
 }
