@@ -8,11 +8,12 @@ import (
 	"time"
 )
 
-const url = "https://58c7d4ca-02d4-42e6-a071-82c5e296efdc.mock.pstmn.io/"
-const getTT = "tt"
+const urlTest = "https://58c7d4ca-02d4-42e6-a071-82c5e296efdc.mock.pstmn.io/"
+const url = "http://jmeal-nsu.ru/"
+const getTT = "lessons/timetable"
 const healthcheck = "healthcheck"
 
-const delaySec = 10
+const delaySec = 120
 
 func (t *TimeTable) UpdateTimetable() error {
 	resp, err := http.Get(url + getTT)
@@ -26,8 +27,8 @@ func (t *TimeTable) UpdateTimetable() error {
 	body, err := ioutil.ReadAll(resp.Body) //todo deprecated
 	err = json.Unmarshal(body, &result)
 	for _, rec := range result {
-		(*t).AddLesson(
-			rec.Name, rec.WeekDay, rec.StartTime, rec.EndTime, rec.Teacher, rec.Classroom)
+		(*t).AddLesson(rec.StartTime, rec.WeekDay, rec.Type, rec.Teacher, rec.Classroom,
+			rec.Name, rec.Pavilion)
 	}
 	return nil
 }
@@ -51,6 +52,5 @@ func (t *TimeTable) UpdateTimer() {
 			println("Error while refreshing the timetable!")
 			return
 		}
-		fmt.Println("refreshed")
 	}
 }

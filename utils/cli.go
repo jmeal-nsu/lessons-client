@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -31,7 +32,6 @@ func Start() {
 	go timetable.UpdateTimer()
 
 	cmdListen(timetable)
-
 }
 
 func cmdListen(timetable *TimeTable) {
@@ -50,13 +50,15 @@ func cmdListen(timetable *TimeTable) {
 			fmt.Println("Bye!")
 			return
 		}
-		parseCmd(&cmd, timetable)
+		if parseCmd(&cmd, timetable) != nil {
+			return
+		}
 		cmd = []string{}
 	}
 
 }
 
-func parseCmd(cmd *[]string, tt *TimeTable) {
+func parseCmd(cmd *[]string, tt *TimeTable) error {
 
 	switch (*cmd)[0] {
 	case "help":
@@ -69,10 +71,14 @@ func parseCmd(cmd *[]string, tt *TimeTable) {
 			show(*cmd, tt)
 			break
 		}
+	case "healthcheck":
+		{
+			return check()
+		}
 	default:
 		fmt.Println("Unknown command! Type 'help' to get list of available commands.")
-
 	}
+	return nil
 }
 
 func help() {
@@ -102,8 +108,13 @@ func show(line []string, tt *TimeTable) {
 			for len(line) < 4 {
 				read(&line, argPointer)
 			}
+
 			//show lesson <day> <start>
-			tt.PrintLesson(line[2], line[3])
+			les, err := tt.FindLesson(line[2], line[3])
+			if err != nil {
+				return
+			}
+			PrintLesson(les)
 		}
 	case "day":
 		{
@@ -117,6 +128,16 @@ func show(line []string, tt *TimeTable) {
 		fmt.Println("Wrong args: " + line[1])
 	}
 
+}
+
+func check() error {
+	res := Healthcheck()
+	if !res {
+		fmt.Println("Connection failed!")
+		return errors.New("")
+	}
+	fmt.Println("Connected!")
+	return nil
 }
 
 func readUntilValidInput(line *[]string, argPointer string, validArgs int) {
